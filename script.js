@@ -1,57 +1,122 @@
-const rssSources = {
-  "سیاسی": [
-    "https://www.shahrekhabar.com/rss.aspx?cat=1"
+/* =======================
+   دسته‌بندی‌ها
+======================= */
+const categories = {
+  all: "همه اخبار",
+  political: "سیاسی",
+  economic: "اقتصادی",
+  sport: "ورزشی",
+  science: "علمی",
+  cultural: "فرهنگی و هنری",
+  market: "بازار",
+  cinema: "سینما و هنر",
+  game: "بازی و گیم",
+  international: "بین‌الملل"
+};
+
+/* =======================
+   منابع RSS
+======================= */
+const sources = {
+  political: [
+    { name: "خبرگزاری جمهوری اسلامی", url: "https://www.irna.ir/rss/tp/1" },
+    { name: "خبرآنلاین - سیاسی", url: "https://www.khabaronline.ir/rss/tp/1" }
   ],
-  "اقتصادی": [
-    "https://www.shahrekhabar.com/rss.aspx?cat=2"
+  economic: [
+    { name: "اقتصاد آنلاین", url: "https://www.eghtesadonline.com/rss" },
+    { name: "ایسنا - اقتصادی", url: "https://www.isna.ir/rss/tp/33" }
   ],
-  "ورزشی": [
-    "https://www.shahrekhabar.com/rss.aspx?cat=3"
+  sport: [
+    { name: "ورزش سه", url: "https://www.varzesh3.com/rss" },
+    { name: "فارس - ورزشی", url: "https://www.farsnews.ir/rss/tp/6" }
   ],
-  "تکنولوژی": [
-    "https://www.shahrekhabar.com/rss.aspx?cat=4"
+  science: [
+    { name: "ایسنا - علمی", url: "https://www.isna.ir/rss/tp/60" },
+    { name: "خبرگزاری دانشجو - علمی", url: "https://www.isna.ir/rss/tp/180" }
+  ],
+  cultural: [
+    { name: "مهر - فرهنگی", url: "https://www.mehrnews.com/rss/tp/4" },
+    { name: "ایسنا - فرهنگی", url: "https://www.isna.ir/rss/tp/5" }
+  ],
+  market: [
+    { name: "بورس نیوز", url: "https://www.boursenews.ir/rss" },
+    { name: "کالا نیوز", url: "https://www.kalanews.ir/rss" }
+  ],
+  cinema: [
+    { name: "تسنیم - سینما", url: "https://www.tasnimnews.com/rss/tp/14" },
+    { name: "ایمنا - سینما", url: "https://www.ayandnews.ir/rss/tp/18" }
+  ],
+  game: [
+    { name: "دیجی‌رُند", url: "https://digi-rund.ir/feed/" },
+    { name: "گیم‌گپ", url: "https://gamegap.ir/feed/" }
+  ],
+  international: [
+    { name: "ایرنا - بین‌الملل", url: "https://www.irna.ir/rss/tp/7" },
+    { name: "خبرآنلاین - بین‌الملل", url: "https://www.khabaronline.ir/rss/tp/3" }
   ]
 };
 
+/* =======================
+   عناصر DOM
+======================= */
 const newsEl = document.getElementById("news");
 const catEl = document.getElementById("categories");
 const breakingEl = document.getElementById("breaking");
 const darkBtn = document.getElementById("darkBtn");
 
-/* ساخت دکمه دسته‌ها */
-Object.keys(rssSources).forEach((cat, i) => {
+/* =======================
+   ساخت منوی دسته‌ها
+======================= */
+Object.keys(categories).forEach((key, i) => {
   const btn = document.createElement("button");
-  btn.textContent = cat;
+  btn.textContent = categories[key];
   if (i === 0) btn.classList.add("active");
-  btn.onclick = () => loadCategory(cat, btn);
+  btn.onclick = () => loadCategory(key, btn);
   catEl.appendChild(btn);
 });
 
-/* بارگذاری RSS با rss2json (بدون CORS) */
-async function loadCategory(cat, btn) {
+/* =======================
+   بارگذاری دسته
+======================= */
+async function loadCategory(catKey, btn) {
   document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
 
   newsEl.innerHTML = "در حال دریافت اخبار...";
-  let allItems = [];
+  let items = [];
 
-  for (const rss of rssSources[cat]) {
-    const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`;
+  let rssList = [];
+
+  if (catKey === "all") {
+    Object.values(sources).forEach(arr => rssList.push(...arr));
+  } else {
+    rssList = sources[catKey] || [];
+  }
+
+  for (const src of rssList) {
+    const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}`;
     try {
-      const res = await fetch(url);
+      const res = await fetch(api);
       const data = await res.json();
+
       if (data.items) {
-        allItems.push(...data.items);
+        data.items.forEach(item => {
+          item.sourceName = src.name;
+          items.push(item);
+        });
       }
     } catch (e) {
-      console.error("RSS Error:", e);
+      console.error("RSS Error:", src.name);
     }
   }
 
-  renderNews(allItems);
+  items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+  renderNews(items);
 }
 
-/* نمایش خبرها */
+/* =======================
+   نمایش خبرها
+======================= */
 function renderNews(items) {
   newsEl.innerHTML = "";
 
@@ -60,7 +125,7 @@ function renderNews(items) {
     return;
   }
 
-  items.slice(0, 20).forEach((item, idx) => {
+  items.slice(0, 30).forEach((item, idx) => {
     if (idx === 0) {
       breakingEl.textContent = "🔔 خبر فوری: " + item.title;
     }
@@ -72,6 +137,7 @@ function renderNews(items) {
       <div class="content">
         <h3>${item.title}</h3>
         <div class="meta">
+          ${item.sourceName} •
           ${new Date(item.pubDate).toLocaleDateString("fa-IR")}
         </div>
         <p>${stripHTML(item.description).slice(0,120)}...</p>
@@ -84,39 +150,40 @@ function renderNews(items) {
   });
 }
 
-/* حذف تگ‌های HTML */
+/* =======================
+   ابزارها
+======================= */
 function stripHTML(html) {
   const div = document.createElement("div");
   div.innerHTML = html || "";
-  return div.textContent || div.innerText || "";
+  return div.textContent || "";
 }
 
-/* جلوگیری از شکستن onclick */
-function escapeQuotes(text){
+function escapeQuotes(text) {
   return text.replace(/'/g, "\\'");
 }
 
-/* علاقه‌مندی */
+/* =======================
+   علاقه‌مندی
+======================= */
 function toggleFav(title, link) {
   let favs = JSON.parse(localStorage.getItem("favs") || "[]");
-  const index = favs.findIndex(f => f.link === link);
+  const i = favs.findIndex(f => f.link === link);
 
-  if (index > -1) {
-    favs.splice(index, 1);
-  } else {
-    favs.push({ title, link });
-  }
+  if (i > -1) favs.splice(i, 1);
+  else favs.push({ title, link });
 
   localStorage.setItem("favs", JSON.stringify(favs));
 }
 
-/* دارک مود */
+/* =======================
+   دارک مود
+======================= */
 darkBtn.onclick = () => {
   document.body.classList.toggle("dark");
 };
 
-/* بارگذاری اولیه */
-loadCategory(
-  Object.keys(rssSources)[0],
-  document.querySelector("nav button")
-);
+/* =======================
+   بارگذاری اولیه
+======================= */
+loadCategory("all", document.querySelector("nav button"));
