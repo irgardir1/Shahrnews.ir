@@ -1,43 +1,31 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>خبرخوان ایرانی</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>شهر نیوز | خبرخوان</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://v1.fontapi.ir/css/Vazir" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>خبرخوان ایرانی</h1>
-      <p>تجمع خبرهای روز از معتبرترین منابع</p>
-    </div>
-  </header>
 
-  <main class="container">
-    <div class="tabs" id="category-tabs"></div>
-    <div class="news-grid" id="news-container">
-      <div class="loading">در حال بارگذاری اخبار...</div>
-    </div>
-  </main>
+<div id="breaking">در حال دریافت خبر فوری...</div>
 
-  <!-- Modal -->
-  <div id="modal-overlay" class="modal-overlay">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-      <div class="modal-header">
-        <h2 id="modal-title">در حال بارگذاری...</h2>
-      </div>
-      <div class="modal-body">
-        <div id="modal-content" class="modal-text">
-          <div class="loader">در حال بارگذاری خبر...</div>
-        </div>
-        <a id="original-link" target="_blank" rel="noopener" class="modal-read-more">مشاهده در سایت اصلی</a>
-      </div>
-    </div>
+<header>
+  <div class="top">
+    <h1>📰 شهر نیوز</h1>
+    <button id="darkBtn">🌙</button>
   </div>
+  <nav id="categories"></nav>
+</header>
 
-  <script src="script.js"></script>
+<main id="news">
+  در حال بارگذاری اخبار...
+</main>
+
+<footer>
+  شهر نیوز | خبرخوان مبتنی بر RSS
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
