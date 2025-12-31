@@ -16,36 +16,20 @@ const sources = {
     { name: "مهر", url: "https://www.mehrnews.com/rss/tp/4" },
     { name: "تسنیم", url: "https://www.tasnimnews.com/rss/tp/14" }
   ],
-  international: [{ name: "خبرآنلاین - بین‌الملل", url: "https://www.khabaronline.ir/rss/tp/3" }],
+  international: [{ name: "خبرآنلاین", url: "https://www.khabaronline.ir/rss/tp/3" }],
   game: [{ name: "گیم‌گپ", url: "https://gamegap.ir/feed/" }]
 };
 
-const logos = {
-  "اقتصاد آنلاین": "https://www.eghtesadonline.com/images/logo.png",
-  "ورزش سه": "https://www.varzesh3.com/images/logo.png",
-  "ایرنا": "https://www.irna.ir/images/logo.png",
-  "مهر": "https://www.mehrnews.com/images/logo.png",
-  "تسنیم": "https://www.tasnimnews.com/images/logo.png",
-  "خبرآنلاین": "https://www.khabaronline.ir/images/logo.png",
-  "گیم‌گپ": "https://gamegap.ir/images/logo.png"
-};
-
 function stripHTML(html) {
+  if (!html) return "";
   const div = document.createElement("div");
-  div.innerHTML = html || "";
-  return div.textContent || "";
-}
-
-function getLogo(sourceName) {
-  for (const key in logos) {
-    if (sourceName.includes(key)) return logos[key];
-  }
-  return "https://placehold.co/600x400?text=خبر&font=roboto";
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
 }
 
 async function loadCategory(catKey) {
   const newsEl = document.getElementById("news");
-  newsEl.innerHTML = "در حال بارگذاری...";
+  newsEl.innerHTML = "در حال دریافت اخبار...";
 
   let items = [];
   const list = catKey === "all" 
@@ -56,7 +40,7 @@ async function loadCategory(catKey) {
     try {
       const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}`);
       const data = await res.json();
-      if (data.status === "ok") {
+      if (data.status === "ok" && data.items) {
         data.items.forEach(item => {
           item.sourceName = src.name;
           items.push(item);
@@ -81,20 +65,15 @@ function renderNews(items) {
   newsEl.innerHTML = "";
 
   items.forEach(item => {
-    const imgUrl = item.thumbnail || 
-                   (item.enclosure?.url) ||
-                   getLogo(item.sourceName);
+    const title = stripHTML(item.title);
+    const summary = stripHTML(item.description).substring(0, 120) + "...";
 
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = "news-card";
     card.innerHTML = `
-      <img src="${imgUrl}" onerror="this.src='https://placehold.co/600x400?text=بدون+عکس&font=roboto'">
-      <div class="content">
-        <h3>${stripHTML(item.title)}</h3>
-        <div class="meta">${item.sourceName}</div>
-        <p>${stripHTML(item.description).substring(0, 140)}...</p>
-        <a href="${item.link}" target="_blank">مشاهده خبر</a>
-      </div>
+      <h3>${title}</h3>
+      <div class="summary">${summary}</div>
+      <a href="${item.link}" target="_blank" rel="noopener" class="view-btn">مشاهده خبر</a>
     `;
     newsEl.appendChild(card);
   });
