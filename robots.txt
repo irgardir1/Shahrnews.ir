@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://irgardir1.github.io/Shahrnews.ir/sitemap.xml
+
+# جلوگیری از ایندکس شدن فایل‌های غیرمحتوایی
+Disallow: /script.js
+Disallow: /style.css
