@@ -94,9 +94,7 @@ Object.keys(categories).forEach((key, i) => {
    دریافت تصویر هوشمند
 ======================= */
 function getSmartImage(title, categoryKey) {
-  const category = categoryMap[categoryKey] || 'news';
-  const keyword = encodeURIComponent(category + " " + title);
-  return `https://source.unsplash.com/600x400/?${keyword}`;
+ const imgUrl = item.thumbnail || 'https://source.unsplash.com/600x400/?news';
 }
 
 /* =======================
