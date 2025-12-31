@@ -1,4 +1,4 @@
-/* دسته‌بندی‌ها فارسی */
+// ========== دسته‌بندی‌ها ==========
 const categories = {
   all: "همه اخبار",
   political: "سیاسی",
@@ -12,7 +12,6 @@ const categories = {
   international: "بین‌الملل"
 };
 
-/* دسته‌ها انگلیسی برای Unsplash */
 const categoryMap = {
   political: "politics",
   economic: "economy",
@@ -25,7 +24,7 @@ const categoryMap = {
   international: "international"
 };
 
-/* منابع RSS — بدون فاصله اضافه! */
+// ========== منابع RSS (بدون فاصله اضافه!) ==========
 const sources = {
   political: [
     { name: "خبرگزاری جمهوری اسلامی", url: "https://www.irna.ir/rss/tp/1" },
@@ -65,13 +64,13 @@ const sources = {
   ]
 };
 
-/* عناصر DOM */
+// ========== عناصر DOM ==========
 const newsEl = document.getElementById("news");
 const catEl = document.getElementById("categories");
 const breakingEl = document.getElementById("breaking");
 const darkBtn = document.getElementById("darkBtn");
 
-/* ساخت منوی دسته‌ها */
+// ========== ساخت منوی دسته‌ها ==========
 Object.keys(categories).forEach((key, i) => {
   const btn = document.createElement("button");
   btn.textContent = categories[key];
@@ -80,27 +79,55 @@ Object.keys(categories).forEach((key, i) => {
   catEl.appendChild(btn);
 });
 
-/* دریافت تصویر هوشمند */
-function getSmartImage(categoryKey) {
-  const fallbackTerm = categoryMap[categoryKey] || "news";
-  return `https://source.unsplash.com/600x400/?${fallbackTerm}`;
+// ========== استخراج هوشمند تصویر ==========
+function getThumbnail(item) {
+  // 1. thumbnail مستقیم (مثل varzesh3)
+  if (item.thumbnail) return item.thumbnail;
+
+  // 2. enclosure (مثل eghtesadonline.com)
+  if (item.enclosure && item.enclosure.url && item.enclosure.type?.startsWith('image/')) {
+    return item.enclosure.url;
+  }
+
+  // 3. تصویر در description (مثل isna, tasnim)
+  const imgMatch = item.description?.match(/<img[^>]+src=["']([^"']+)["']/);
+  if (imgMatch && imgMatch[1]) return imgMatch[1];
+
+  return null;
 }
 
-/* بارگذاری دسته */
+// ========== انتخاب تصویر جایگزین ==========
+function getFallbackImage(categoryKey) {
+  const term = categoryMap[categoryKey] || "news";
+  return `https://source.unsplash.com/600x400/?${term}`;
+}
+
+// ========== پاک‌سازی HTML ==========
+function stripHTML(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html || "";
+  return div.textContent || "";
+}
+
+// ========== escape نقل قول‌ها ==========
+function escapeQuotes(text) {
+  return (text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+}
+
+// ========== بارگذاری اخبار ==========
 async function loadCategory(catKey, btn) {
   document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
-
   newsEl.innerHTML = "در حال دریافت اخبار...";
+  
   let items = [];
-
-  let rssList = catKey === "all" 
+  const rssList = catKey === "all" 
     ? Object.values(sources).flat() 
     : sources[catKey] || [];
 
   for (const src of rssList) {
-    const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}`;
     try {
+      const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}`;
       const res = await fetch(api);
       const data = await res.json();
 
@@ -111,7 +138,7 @@ async function loadCategory(catKey, btn) {
         });
       }
     } catch (e) {
-      console.error("RSS Error:", src.name, e);
+      console.warn("خطا در بارگذاری:", src.name, e);
     }
   }
 
@@ -119,12 +146,11 @@ async function loadCategory(catKey, btn) {
   renderNews(items, catKey);
 }
 
-/* نمایش خبرها */
+// ========== نمایش اخبار ==========
 function renderNews(items, catKey) {
   newsEl.innerHTML = "";
-
   if (!items.length) {
-    newsEl.innerHTML = "خبری یافت نشد";
+    newsEl.innerHTML = "خبری یافت نشد.";
     return;
   }
 
@@ -133,21 +159,23 @@ function renderNews(items, catKey) {
       breakingEl.textContent = "🔔 خبر فوری: " + stripHTML(item.title);
     }
 
-    const imgUrl = item.thumbnail || getSmartImage(catKey);
+    const imgUrl = getThumbnail(item) || getFallbackImage(catKey);
 
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <img src="${imgUrl}" onerror="this.src='https://source.unsplash.com/600x400/?news'">
+      <img src="${imgUrl}" 
+           onerror="this.onerror=null;this.src='https://source.unsplash.com/600x400/?news'" 
+           loading="lazy"
+           alt="تصویر خبر">
       <div class="content">
-        <h3>${stripHTML(item.title)}</h3>
+        <h3>${escapeHTML(stripHTML(item.title))}</h3>
         <div class="meta">
-          ${item.sourceName} •
+          ${item.sourceName} • 
           ${new Date(item.pubDate).toLocaleDateString("fa-IR")}
         </div>
-        <p>${stripHTML(item.description).slice(0,120)}...</p>
+        <p>${escapeHTML(stripHTML(item.description).slice(0, 120))}...</p>
         <a href="${item.link}" target="_blank" rel="noopener">مشاهده خبر</a>
-        <br>
         <button class="fav" onclick="toggleFav('${escapeQuotes(stripHTML(item.title))}','${item.link}')">❤️</button>
       </div>
     `;
@@ -155,29 +183,31 @@ function renderNews(items, catKey) {
   });
 }
 
-/* ابزارها */
-function stripHTML(html) {
-  const div = document.createElement("div");
-  div.innerHTML = html || "";
-  return div.textContent || "";
+// ========== escape HTML برای نمایش ایمن ==========
+function escapeHTML(str) {
+  return str.replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m]));
 }
 
-function escapeQuotes(text) {
-  return text.replace(/'/g, "\\'");
-}
-
+// ========== ذخیره علاقه‌مندی‌ها ==========
 function toggleFav(title, link) {
   let favs = JSON.parse(localStorage.getItem("favs") || "[]");
   const i = favs.findIndex(f => f.link === link);
   if (i > -1) favs.splice(i, 1);
   else favs.push({ title, link });
   localStorage.setItem("favs", JSON.stringify(favs));
+  alert(i > -1 ? "از لیست علاقه‌مندی‌ها حذف شد" : "به لیست علاقه‌مندی‌ها اضافه شد");
 }
 
-/* دارک مود */
+// ========== حالت تاریک ==========
 darkBtn.onclick = () => {
   document.body.classList.toggle("dark");
 };
 
-/* بارگذاری اولیه */
+// ========== بارگذاری اولیه ==========
 loadCategory("all", document.querySelector("nav button"));
