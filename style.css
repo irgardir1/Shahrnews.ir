@@ -104,3 +104,88 @@ footer {
   color: #777;
   font-size: 12px;
 }
+
+
+/* ========== بخش سئو - تمام عرض صفحه ========== */
+.seo-info-full {
+  width: 100%;
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  padding: 40px 0;
+  margin: 50px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-top: 1px solid #e0e6ed;
+  border-bottom: 1px solid #e0e6ed;
+}
+
+.seo-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+  color: #2d3748;
+  line-height: 1.8;
+  font-family: "Vazir", tahoma, sans-serif;
+  direction: rtl;
+}
+
+.seo-info-full h2 {
+  font-size: 1.8rem;
+  color: #1a365d;
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #4CAF50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seo-icon {
+  background: #4CAF50;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* رنگ‌بندی منابع */
+.source-irna { color: #c62828; font-weight: 600; }
+.source-isna { color: #1565c0; font-weight: 600; }
+.source-fars { color: #d84315; font-weight: 600; }
+.source-tasnim { color: #388e3c; font-weight: 600; }
+.source-varzesh3 { color: #0277bd; font-weight: 600; }
+.source-eghtesad { color: #827717; font-weight: 600; }
+
+.highlight {
+  background: #e8f5e9;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: #2e7d32;
+}
+
+.seo-notes {
+  background: #f1f8e9;
+  border-right: 4px solid #7cb342;
+  padding: 16px;
+  border-radius: 0 8px 8px 0;
+  margin: 20px 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.btn-text {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.seo-disclaimer {
+  font-size: 14px;
+  color: #555;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #cbd5e0;
+}
+
